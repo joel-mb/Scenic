@@ -91,6 +91,8 @@ class CarlaSimulation(DrivingSimulation):
 		for obj in self.objects:
 			# Extract blueprint
 			blueprint = self.blueprintLib.find(obj.blueprint)
+			if obj.rolename is not None:
+				blueprint.set_attribute('role_name', obj.rolename)
 
 			print("blueprint: ", blueprint)
 
@@ -195,4 +197,5 @@ class CarlaSimulation(DrivingSimulation):
 		if hasattr(self, "cameraManager"):
 			self.cameraManager.destroy_sensor()
 
+		self.world.tick()
 		super(CarlaSimulation, self).destroy()
