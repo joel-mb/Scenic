@@ -91,6 +91,8 @@ class CarlaSimulation(DrivingSimulation):
 		for obj in self.objects:
 			# Extract blueprint
 			blueprint = self.blueprintLib.find(obj.blueprint)
+			if obj.rolename is not None:
+				blueprint.set_attribute('role_name', obj.rolename)
 
 			print("blueprint: ", blueprint)
 
@@ -103,6 +105,7 @@ class CarlaSimulation(DrivingSimulation):
 			# Create Carla actor
 			carlaActor = self.world.try_spawn_actor(blueprint, transform)
 			if carlaActor is None:
+				self.destroy()
 				raise SimulationCreationError(f'Unable to spawn object {obj}')
 			obj.carlaActor = carlaActor
 
@@ -195,4 +198,5 @@ class CarlaSimulation(DrivingSimulation):
 		if hasattr(self, "cameraManager"):
 			self.cameraManager.destroy_sensor()
 
+		self.world.tick()
 		super(CarlaSimulation, self).destroy()
