@@ -94,6 +94,9 @@ class CarlaSimulation(DrivingSimulation):
 			if obj.rolename is not None:
 				blueprint.set_attribute('role_name', obj.rolename)
 
+			if blueprint.has_attribute('is_invincible'):
+				blueprint.set_attribute('is_invincible', 'False')
+
 			print("blueprint: ", blueprint)
 
 			# Set up transform
