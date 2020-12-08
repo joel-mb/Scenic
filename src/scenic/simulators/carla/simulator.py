@@ -94,6 +94,7 @@ class CarlaSimulation(DrivingSimulation):
 			if obj.rolename is not None:
 				blueprint.set_attribute('role_name', obj.rolename)
 
+			# set walker as not invincible
 			if blueprint.has_attribute('is_invincible'):
 				blueprint.set_attribute('is_invincible', 'False')
 
@@ -115,12 +116,16 @@ class CarlaSimulation(DrivingSimulation):
 			carlaActor.set_simulate_physics(obj.physics)
 
 			if isinstance(carlaActor, carla.Vehicle):
-				if obj.autopilot:
-					carlaActor.set_autopilot(obj.autopilot, self.tm.get_port())
-				else:
-					carlaActor.apply_control(carla.VehicleControl(manual_gear_shift=True, gear=1))
+				carlaActor.apply_control(carla.VehicleControl(manual_gear_shift=True, gear=1))
 			elif isinstance(carlaActor, carla.Walker):
 				carlaActor.apply_control(carla.WalkerControl())
+				# spawn walker controller
+				controller_bp = self.blueprintLib.find('controller.ai.walker')
+				controller = self.world.try_spawn_actor(controller_bp, carla.Transform(), carlaActor)
+				if controller is None:
+					self.destroy()
+					raise SimulationCreationError(f'Unable to spawn carla controller for object {obj}')
+				obj.carlaController = controller
 
 			# Check if ego (from carla_scenic_taks.py)
 			if obj is self.objects[0]:
@@ -197,6 +202,9 @@ class CarlaSimulation(DrivingSimulation):
 	def destroy(self):
 		for obj in self.objects:
 			if obj.carlaActor is not None:
+				if isinstance(obj.carlaActor, carla.Walker):
+					obj.carlaController.stop()
+					obj.carlaController.destroy()
 				obj.carlaActor.destroy()
 		if hasattr(self, "cameraManager"):
 			self.cameraManager.destroy_sensor()
