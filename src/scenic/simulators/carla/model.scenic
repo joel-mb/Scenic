@@ -63,8 +63,8 @@ param sun_altitude_angle = Range(-90, 90)
 
 class CarlaActor(DrivingObject):
     carlaActor: None
-    rolename: None
     blueprint: None
+    rolename: None
     color: None
     elevation: 0.5
     physics: True
@@ -87,7 +87,6 @@ class CarlaActor(DrivingObject):
 
 
 class Vehicle(Vehicle, CarlaActor, Steers):
-    autopilot: False
 
     def setThrottle(self, throttle):
         self.control.throttle = throttle
@@ -135,6 +134,7 @@ class Pedestrian(Pedestrian, CarlaActor, Walks):
     width: 0.5
     length: 0.5
     blueprint: Uniform(*blueprints.walkerModels)
+    carlaController: None
 
     def setWalkingDirection(self, heading):
         forward = self.carlaActor.get_transform().get_forward_vector()
