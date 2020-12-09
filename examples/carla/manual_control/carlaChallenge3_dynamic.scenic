@@ -25,7 +25,6 @@ behavior PedestrianBehavior(min_speed=1):
     while (distance from self to ego) > THRESHOLD:
         wait
 
-    take SetWalkingDirectionAction(0)
     do CrossingActorSpeedControl(ego, min_speed)
 
 ## DEFINING SPATIAL RELATIONS
