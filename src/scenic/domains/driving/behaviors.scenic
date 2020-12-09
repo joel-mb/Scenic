@@ -392,3 +392,22 @@ behavior LaneChangeBehavior(laneSectionToSwitch, is_oppositeTraffic=False, targe
 
         take RegulatedControlAction(throttle, current_steer_angle, past_steer_angle)
         past_steer_angle = current_steer_angle
+
+
+behavior CrossingActorSpeedControl(reference_actor, min_speed=1):
+
+    while True:
+        distance_vec = self.position - reference_actor.position
+        rotated_vec = distance_vec.rotatedBy(-reference_actor.heading)
+
+        ref_dist = rotated_vec.y
+        actor_dist = rotated_vec.x
+
+        ref_speed = reference_actor.speed
+        ref_time = ref_speed / ref_dist
+
+        actor_speed = actor_dist * ref_time
+        if actor_speed < min_speed:
+            actor_speed = min_speed
+
+        take SetWalkingSpeedAction(actor_speed)
