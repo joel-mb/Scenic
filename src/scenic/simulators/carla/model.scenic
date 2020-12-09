@@ -83,7 +83,9 @@ class CarlaActor(DrivingObject):
         self.carlaActor.set_location(utils.scenicToCarlaLocation(pos, elevation))
 
     def setVelocity(self, vel):
-        self.carlaActor.set_target_velocity(utils.scenicToCarlaVector3D(*vel))
+        carla_vel = utils.scenicToCarlaVector3D(*vel)
+        carla_vel.y = -carla_vel.y # Change to CARLA's coordinate system
+        self.carlaActor.set_target_velocity(carla_vel)
 
 
 class Vehicle(Vehicle, CarlaActor, Steers):
