@@ -97,6 +97,17 @@ class SetTrafficLightAction(VehicleAction):
 		if traffic_light is not None:
 			traffic_light.set_state(self.color)
 
+class SetAutopilotAction(VehicleAction):
+	def __init__(self, enabled):
+		if not isinstance(enabled, int):
+			raise RuntimeError('Enabled must be a boolean.')
+		self.enabled = enabled
+
+	def applyTo(self, obj, sim):
+		vehicle = obj.carlaActor
+		vehicle.set_autopilot(self.enabled, sim.tm.get_port())
+
+
 #################################################
 # Actions available to all carla.Walker objects #
 #################################################
@@ -116,6 +127,23 @@ class SetJumpAction(PedestrianAction):
 		ctrl = walker.get_control()
 		ctrl.jump = self.jump
 		walker.apply_control(ctrl)
+
+class SetWalkAction(PedestrianAction):
+	def __init__(self, enabled, maxSpeed=1.4):
+		if not isinstance(enabled, int):
+			raise RuntimeError('Enabled must be a boolean.')
+		self.enabled = enabled
+		self.maxSpeed = maxSpeed
+
+	def applyTo(self, obj, sim):
+		controller = obj.carlaController
+		if self.enabled:
+			controller.start()
+			controller.go_to_location(sim.world.get_random_location_from_navigation())
+			controller.set_max_speed(self.maxSpeed)
+		else:
+			controller.stop()
+
 
 class TrackWaypointsAction(Action):
 	def __init__(self, waypoints, cruising_speed = 10):
