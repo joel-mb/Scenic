@@ -18,6 +18,16 @@ EGO_SPEED = 10
 #            setClosestTrafficLightStatus(ego, "green")
 #        wait
 
+monitor TrafficLightsMaps:
+    while True:
+        if ego._intersection is not None:
+            setAllIntersectionTrafficLightsStatus(ego._intersection, "green")
+            # for signal in ego._intersection.signals:
+            #     setTrafficLightStatus(signal, "green")
+            # for signal in ego._intersection.signals:
+            #     print(getTrafficLightStatus(signal))
+        wait
+
 ## DEFINING BEHAVIORS
 #behavior EgoBehavior(speed=10):
 #    do FollowLaneBehavior(speed)
@@ -45,7 +55,8 @@ lane = Uniform(*network.lanes)
 
 ego = Car on lane.centerline,
     with blueprint EGO_MODEL,
-    with behavior EgoBehaviorTL(EGO_SPEED)
+    with rolename "hero"
+    #with behavior EgoBehaviorTL(EGO_SPEED)
 
 require (distance from ego to intersection) < 50
 require (distance from ego to intersection) > 5

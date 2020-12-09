@@ -42,7 +42,7 @@ behavior EgoBehavior(trajectory):
 spawnAreas = []
 
 # The meaning of filter() function is explained in examples/carla/Carla_Challenge/carlaChallenge7.scenic
-fourWayIntersection = filter(lambda i: i.is4Way, network.intersections)
+fourWayIntersection = filter(lambda i: i.is4Way and i.isSignalized, network.intersections)
 
 # make sure to put '*' to uniformly randomly select from all elements of the list
 intersec = Uniform(*fourWayIntersection)
