@@ -14,7 +14,7 @@ model scenic.simulators.carla.model
 EGO_MODEL = "vehicle.lincoln.mkz2017"
 EGO_SPEED = 10
 
-PEDESTRIAN_MIN_SPEED = 0.3
+PEDESTRIAN_MIN_SPEED = 0.5
 THRESHOLD = 17
 
 # EGO BEHAVIOR: Follow lane and brake when reaches threshold distance to obstacle

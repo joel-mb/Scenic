@@ -83,9 +83,7 @@ class CarlaActor(DrivingObject):
         self.carlaActor.set_location(utils.scenicToCarlaLocation(pos, elevation))
 
     def setVelocity(self, vel):
-        carla_vel = utils.scenicToCarlaVector3D(*vel)
-        carla_vel.y = -carla_vel.y # Change to CARLA's coordinate system
-        self.carlaActor.set_target_velocity(carla_vel)
+        self.carlaActor.set_target_velocity(utils.scenicToCarlaVector3D(*vel))
 
 
 class Vehicle(Vehicle, CarlaActor, Steers):
@@ -139,8 +137,9 @@ class Pedestrian(Pedestrian, CarlaActor, Walks):
     carlaController: None
 
     def setWalkingDirection(self, heading):
-        forward = self.carlaActor.get_transform().get_forward_vector()
-        direction = Vector(forward.x, forward.y).rotatedBy(heading)
+        # TODO: forward calculus takes into account the diffeerence in references. Use a generic function to calculate it
+        forward = Vector(-sin(self.heading), cos(self.heading))
+        direction = forward.rotatedBy(heading)
         zComp = self.control.direction.z
         self.control.direction = utils.scenicToCarlaVector3D(*direction, zComp)
 
