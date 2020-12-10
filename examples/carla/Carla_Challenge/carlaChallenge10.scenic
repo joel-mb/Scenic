@@ -9,19 +9,21 @@ param carla_map = 'Town05'
 model scenic.simulators.carla.model
 
 #CONSTANTS
-EGO_DISTANCE_TO_INTERSECTION = Uniform(15, 20) * -1
-ADV_DISTANCE_TO_INTERSECTION = Uniform(10, 15) * -1
+EGO_INTER_DIST = [15, 20]
+ADV_INTER_DIST = [15, 20]
+EGO_SPEED = 10
 SAFETY_DISTANCE = 20
 BRAKE_INTENSITY = 1.0
 
 ##DEFINING BEHAVIORS
-behavior CrossingCarBehavior(trajectory):
+behavior AdversaryBehavior(trajectory):
 	do FollowTrajectoryBehavior(trajectory = trajectory)
 	terminate
 
-behavior EgoBehavior(trajectory):
+behavior EgoBehavior(speed, trajectory):
 	try:
-		do FollowTrajectoryBehavior(trajectory=trajectory)
+		do FollowTrajectoryBehavior(target_speed=speed, trajectory=trajectory)
+		do FollowLaneBehavior(target_speed=speed)
 	interrupt when withinDistanceToAnyObjs(self, SAFETY_DISTANCE):
 		take SetBrakeAction(BRAKE_INTENSITY)
 
@@ -43,16 +45,15 @@ adv_trajectory = [adv_maneuver.startLane, adv_maneuver.connectingLane, adv_maneu
 adv_start_lane = adv_maneuver.startLane
 
 ## OBJECT PLACEMENT
-# Use the -1' index to get the last endpoint from the list of centerpoints in 'centerline'
-ego_spawn_point = ego_start_lane.centerline[-1]
-adv_spawn_point = adv_start_lane.centerline[-1]
+ego_spawn_pt = OrientedPoint in ego_maneuver.startLane.centerline
+adv_spawn_pt = OrientedPoint in adv_maneuver.startLane.centerline
 
-# Set a specific vehicle model for the Truck.
-# The referenceable types of vehicles supported in carla are listed in scenic/simulators/carla/model.scenic
-# For each vehicle type, the supported models are listed in scenic/simulators/carla/blueprints.scenic
-ego = Car following roadDirection from ego_spawn_point for EGO_DISTANCE_TO_INTERSECTION,
-	with behavior EgoBehavior(ego_trajectory)
+ego = Car at ego_spawn_pt,
+	with behavior EgoBehavior(EGO_SPEED, ego_trajectory)
 
-adversary = Car following roadDirection from adv_spawn_point for ADV_DISTANCE_TO_INTERSECTION,
-	with behavior CrossingCarBehavior(adv_trajectory)
+adversary = Car at adv_spawn_pt,
+	with behavior AdversaryBehavior(adv_trajectory)
+
+require (distance from ego to intersec) > EGO_INTER_DIST[0] and (distance from ego to intersec) < EGO_INTER_DIST[1]
+require (distance from adversary to intersec) > ADV_INTER_DIST[0] and (distance from adversary to intersec) < ADV_INTER_DIST[1]
 

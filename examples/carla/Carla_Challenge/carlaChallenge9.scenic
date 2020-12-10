@@ -9,31 +9,33 @@ param carla_map = 'Town05'
 model scenic.simulators.carla.model
 
 # CONSTANTS
-EGO_DISTANCE_TO_INTERSECTION = Uniform(25, 30) * -1
-ADV_DISTANCE_TO_INTERSECTION = Uniform(15, 20) * -1
+EGO_INTER_DIST = [30, 35]
+ADV_INTER_DIST = [10, 15]
+EGO_SPEED = 10
 SAFETY_DISTANCE = 20
 BRAKE_INTENSITY = 1.0
 
 ## MONITORS
 monitor TrafficLights:
-   while True:
-       if withinDistanceToTrafficLight(ego, 100):
-           setClosestTrafficLightStatus(ego, "red")
-       if withinDistanceToTrafficLight(adversary, 100):
-           setClosestTrafficLightStatus(adversary, "green")
-       wait
+	freezeTrafficLights()
+	while True:
+		if withinDistanceToTrafficLight(ego, 100):
+			setClosestTrafficLightStatus(ego, "red")
+		if withinDistanceToTrafficLight(adversary, 100):
+			setClosestTrafficLightStatus(adversary, "green")
+		wait
 
 ## DEFINING BEHAVIORS
-behavior CrossingCarBehavior(trajectory):
+behavior AdversaryBehavior(trajectory):
 	do FollowTrajectoryBehavior(trajectory = trajectory)
 	terminate
 
-behavior EgoBehavior(trajectory):
-	try :
-		do FollowTrajectoryBehavior(trajectory=trajectory)
+behavior EgoBehavior(speed, trajectory):
+	try:
+		do FollowTrajectoryBehavior(target_speed=speed, trajectory=trajectory)
+		do FollowLaneBehavior(target_speed=speed)
 	interrupt when withinDistanceToAnyObjs(self, SAFETY_DISTANCE):
 		take SetBrakeAction(BRAKE_INTENSITY)
-
 
 ## DEFINING SPATIAL RELATIONS
 # Please refer to scenic/domains/driving/roads.py how to access detailed road infrastructure
@@ -59,15 +61,15 @@ adv_trajectory = [adv_maneuver.startLane, adv_maneuver.connectingLane, adv_maneu
 adv_start_lane = adv_maneuver.startLane
 
 ## OBJECT PLACEMENT
-# Use the -1' index to get the last endpoint from the list of centerpoints in 'centerline'
-ego_spawn_pt = ego_start_lane.centerline[-1]
-adv_spawn_pt = adv_start_lane.centerline[-1]
+ego_spawn_pt = OrientedPoint in ego_maneuver.startLane.centerline
+adv_spawn_pt = OrientedPoint in adv_maneuver.startLane.centerline
 
-ego = Car following roadDirection from ego_spawn_pt for EGO_DISTANCE_TO_INTERSECTION,
-	with behavior EgoBehavior(ego_trajectory),
-	with blueprint 'vehicle.lincoln.mkz2017'
+ego = Car at ego_spawn_pt,
+	with behavior EgoBehavior(EGO_SPEED, ego_trajectory)
 
-adversary = Car following roadDirection from adv_spawn_pt for ADV_DISTANCE_TO_INTERSECTION,
-	with behavior CrossingCarBehavior(adv_trajectory)
+adversary = Car at adv_spawn_pt,
+	with behavior AdversaryBehavior(adv_trajectory)
 
 require (ego_maneuver.endLane == adv_maneuver.endLane)
+require (distance from ego to intersec) > EGO_INTER_DIST[0] and (distance from ego to intersec) < EGO_INTER_DIST[1]
+require (distance from adversary to intersec) > ADV_INTER_DIST[0] and (distance from adversary to intersec) < ADV_INTER_DIST[1]
