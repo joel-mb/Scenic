@@ -1,7 +1,6 @@
 
 from scenic.domains.driving.behaviors import *	# use common driving behaviors
 
-
 try:
     from scenic.simulators.carla.actions import *
 except ModuleNotFoundError:
