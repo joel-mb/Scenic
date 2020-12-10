@@ -435,3 +435,7 @@ behavior CrossingBehavior(reference_actor, min_speed=1, threshold=10, final_spee
     elif isinstance(self, _model.Steers):
         take SetSpeedAction(final_speed)
 
+behavior EmptyBehavior():
+
+    while True:
+        wait
