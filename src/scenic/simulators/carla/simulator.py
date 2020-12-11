@@ -20,15 +20,24 @@ import scenic.simulators.carla.utils.visuals as visuals
 
 
 class CarlaSimulator(DrivingSimulator):
-	def __init__(self, carla_map, address='127.0.0.1', port=2000, timeout=10,
-		         render=True, record=False, timestep=0.1):
+	def __init__(self, carla_map, map_path, address='127.0.0.1', port=2000, timeout=10,
+		         render=True, record=False, timestep=0.1, weather=None):
 		super().__init__()
 		verbosePrint('Connecting to CARLA...')
 		self.client = carla.Client(address, port)
 		self.client.set_timeout(timeout)  # limits networking operations (seconds)
-		self.world = self.client.load_world(carla_map)
-		self.map = carla_map
+		if carla_map is not None:
+			self.world = self.client.load_world(carla_map)
+		else:
+			with open(map_path) as odr_file:
+				self.world = self.client.generate_opendrive_world(odr_file.read())
 		self.timestep = timestep
+
+		if weather is not None:
+			if isinstance(weather, str):
+				self.world.set_weather(getattr(carla.WeatherParameters, weather))
+			elif isinstance(weather, dict):
+				self.world.set_weather(carla.WatherParameters(**weather))
 
 		self.tm = self.client.get_trafficmanager()
 		self.tm.set_synchronous_mode(True)
@@ -93,6 +102,8 @@ class CarlaSimulation(DrivingSimulation):
 			blueprint = self.blueprintLib.find(obj.blueprint)
 			if obj.rolename is not None:
 				blueprint.set_attribute('role_name', obj.rolename)
+			if obj.color is not None and blueprint.has_attribute('color'):
+				blueprint.set_attribute('color', obj.color)
 
 			# set walker as not invincible
 			if blueprint.has_attribute('is_invincible'):
