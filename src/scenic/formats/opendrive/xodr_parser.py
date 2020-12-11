@@ -921,9 +921,9 @@ class Road:
 
         # Create signal
         roadSignals = []
-        for signal_ in self.signals:
+        for i, signal_ in enumerate(self.signals):
             signal = roadDomain.Signal(
-                uid=f'signal{signal_.id_}_{self.id_}',
+                uid=f'signal{signal_.id_}_{self.id_}_{i}',
                 openDriveID=signal_.id_,
                 country=signal_.country,
                 type=signal_.type_
