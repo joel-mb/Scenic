@@ -102,8 +102,6 @@ class CarlaSimulation(DrivingSimulation):
 			blueprint = self.blueprintLib.find(obj.blueprint)
 			if obj.rolename is not None:
 				blueprint.set_attribute('role_name', obj.rolename)
-			if obj.color is not None and blueprint.has_attribute('color'):
-				blueprint.set_attribute('color', obj.color)
 
 			# set walker as not invincible
 			if blueprint.has_attribute('is_invincible'):
