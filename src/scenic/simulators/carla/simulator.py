@@ -37,7 +37,7 @@ class CarlaSimulator(DrivingSimulator):
 			if isinstance(weather, str):
 				self.world.set_weather(getattr(carla.WeatherParameters, weather))
 			elif isinstance(weather, dict):
-				self.world.set_weather(carla.WatherParameters(**weather))
+				self.world.set_weather(carla.WeatherParameters(**weather))
 
 		self.tm = self.client.get_trafficmanager()
 		self.tm.set_synchronous_mode(True)
