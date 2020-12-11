@@ -13,20 +13,21 @@ model scenic.simulators.carla.model
 # CONSTANTS
 EGO_MODEL = "vehicle.lincoln.mkz2017"
 EGO_SPEED = 10
+SAFETY_DISTANCE = 10
+BRAKE_INTENSITY = 1.0
 
-PEDESTRIAN_SPEED = 5
-
-THRESHOLD = 15
+PEDESTRIAN_MIN_SPEED = 1.0
+THRESHOLD = 20
 
 # EGO BEHAVIOR: Follow lane and brake when reaches threshold distance to obstacle
 behavior EgoBehavior(speed=10):
-    do FollowLaneBehavior(speed)
+    try:
+        do FollowLaneBehavior(target_speed=speed)
+    interrupt when withinDistanceToObjsInLane(self, SAFETY_DISTANCE):
+        take SetBrakeAction(BRAKE_INTENSITY)
 
-behavior PedestrianBehavior(speed=3):
-    while (distance from self to ego) > THRESHOLD:
-        wait
-
-    do WalkForwardBehavior(speed)
+behavior PedestrianBehavior(min_speed=1, threshold=10):
+    do CrossingBehavior(ego, min_speed, threshold)
 
 ## DEFINING SPATIAL RELATIONS
 # Please refer to scenic/domains/driving/roads.py how to access detailed road infrastructure
@@ -41,7 +42,7 @@ vending_spot = OrientedPoint following roadDirection from spot for -3
 pedestrian = Pedestrian right of spot by 3,
     with heading 90 deg relative to spot.heading,
     with regionContainedIn None,
-    with behavior PedestrianBehavior(PEDESTRIAN_SPEED)
+    with behavior PedestrianBehavior(PEDESTRIAN_MIN_SPEED, THRESHOLD)
 
 vending_machine = VendingMachine right of vending_spot by 3,
     with heading -90 deg relative to vending_spot.heading,
@@ -51,4 +52,5 @@ ego = Car following roadDirection from spot for Range(-30, -20),
     with blueprint EGO_MODEL,
     with behavior EgoBehavior(EGO_SPEED)
 
-require (distance from ego to intersection) > 20
+require (distance from ego to intersection) > 75
+terminate when (distance to spot) > 50
