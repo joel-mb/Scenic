@@ -55,10 +55,7 @@ else:
     if globalParameters.render not in ['0', '1']:
         raise ValueError('render param must be either 0 or 1')
 if 'record' not in globalParameters:
-    param record = False
-else:
-    if globalParameters.record not in ['0', '1']:
-        raise ValueError('record param must be either 0 or 1')
+    param record = ''
 if 'timestep' not in globalParameters:
     param timestep = 0.1
 if 'weather' not in globalParameters:
@@ -71,7 +68,7 @@ simulator CarlaSimulator(
     port=int(globalParameters.port),
     timeout=int(globalParameters.timeout),
     render=bool(int(globalParameters.render)),
-    record=bool(int(globalParameters.record)),
+    record=globalParameters.record,
     timestep=float(globalParameters.timestep),
     weather=globalParameters.weather
 )

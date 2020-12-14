@@ -5,6 +5,7 @@ except ImportError as e:
 	raise ModuleNotFoundError('CARLA scenarios require the "carla" Python package') from e
 
 import math
+import os
 
 from scenic.syntax.translator import verbosity
 if verbosity == 0:	# suppress pygame advertisement at zero verbosity
@@ -50,12 +51,14 @@ class CarlaSimulator(DrivingSimulator):
 		verbosePrint('Map loaded in simulator.')
 
 		self.render = render  # visualization mode ON/OFF
-		self.record = record  # whether to save images to disk
+		self.record = record  # whether to use the carla recorder
+		self.scenario_number = 0  # Number of the scenario executed
 
 	def createSimulation(self, scene, verbosity=0):
+		self.scenario_number += 1
 		return CarlaSimulation(scene, self.client, self.tm, self.timestep,
 							   render=self.render, record=self.record,
-							   verbosity=verbosity)
+							   scenario_number=self.scenario_number, verbosity=verbosity)
 
 	def destroy(self):
 		settings = self.world.get_settings()
@@ -68,7 +71,7 @@ class CarlaSimulator(DrivingSimulator):
 
 
 class CarlaSimulation(DrivingSimulation):
-	def __init__(self, scene, client, tm, timestep, render, record, verbosity=0):
+	def __init__(self, scene, client, tm, timestep, render, record, scenario_number, verbosity=0):
 		super().__init__(scene, timestep=timestep, verbosity=verbosity)
 		self.client = client
 		self.world = self.client.get_world()
@@ -82,6 +85,7 @@ class CarlaSimulation(DrivingSimulation):
 		# Setup HUD
 		self.render = render
 		self.record = record
+		self.scenario_number = scenario_number
 		if self.render:
 			self.displayDim = (1280, 720)
 			self.displayClock = pygame.time.Clock()
@@ -94,6 +98,12 @@ class CarlaSimulation(DrivingSimulation):
 				pygame.HWSURFACE | pygame.DOUBLEBUF
 			)
 			self.cameraManager = None
+
+		if self.record:
+			if not os.path.exists(self.record):
+				os.mkdir(self.record)
+			name = "{}/scenario{}.log".format(self.record, self.scenario_number)
+			self.client.start_recorder(name)
 
 		# Create Carla actors corresponding to Scenic objects
 		self.ego = None
@@ -148,7 +158,6 @@ class CarlaSimulation(DrivingSimulation):
 					self.cameraManager._transform_index = camPosIndex
 					self.cameraManager.set_sensor(camIndex)
 					self.cameraManager.set_transform(self.camTransform)
-					self.cameraManager._recording = self.record
 
 		self.world.tick() ## allowing manualgearshift to take effect 
 
@@ -217,6 +226,8 @@ class CarlaSimulation(DrivingSimulation):
 				obj.carlaActor.destroy()
 		if hasattr(self, "cameraManager"):
 			self.cameraManager.destroy_sensor()
+
+		self.client.stop_recorder()
 
 		self.world.tick()
 		super(CarlaSimulation, self).destroy()
