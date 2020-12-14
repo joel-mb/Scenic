@@ -55,7 +55,7 @@ class CarlaSimulator(DrivingSimulator):
 		self.world.apply_settings(settings)
 		self.tm.set_synchronous_mode(False)
 
-		super(CarlaSimulator, self).destroy()
+		super().destroy()
 
 
 class CarlaSimulation(DrivingSimulation):
@@ -140,10 +140,7 @@ class CarlaSimulation(DrivingSimulation):
 		carlaActor.set_simulate_physics(obj.physics)
 
 		if isinstance(carlaActor, carla.Vehicle):
-			if obj.autopilot:
-				carlaActor.set_autopilot(obj.autopilot, self.tm.get_port())
-			else:
-				carlaActor.apply_control(carla.VehicleControl(manual_gear_shift=True, gear=1))
+			carlaActor.apply_control(carla.VehicleControl(manual_gear_shift=True, gear=1))
 		elif isinstance(carlaActor, carla.Walker):
 			carlaActor.apply_control(carla.WalkerControl())
 		return carlaActor
@@ -196,7 +193,7 @@ class CarlaSimulation(DrivingSimulation):
 		for obj in self.objects:
 			if obj.carlaActor is not None:
 				obj.carlaActor.destroy()
-		if hasattr(self, "cameraManager"):
+		if self.render and self.cameraManager:
 			self.cameraManager.destroy_sensor()
 
-		super(CarlaSimulation, self).destroy()
+		super().destroy()

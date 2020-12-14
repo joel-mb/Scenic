@@ -45,16 +45,10 @@ class Simulator:
                     raise
                 else:
                     continue
-            except KeyboardInterrupt:
-                if "simulation" in locals():
-                    simulation.destroy()
-                raise
-
             # Completed the simulation without violating a requirement
             if verbosity >= 2:
                 print(f'  Simulation {iterations} ended successfully at time step '
                       f'{simulation.currentTime} because of: {result.terminationReason}')
-            simulation.destroy()
             return result
         return None
 
@@ -167,6 +161,7 @@ class Simulation:
             result = SimulationResult(trajectory, actionSequence, terminationReason)
             return result
         finally:
+            self.destroy()
             for obj in self.scene.objects:
                 disableDynamicProxyFor(obj)
             for agent in self.agents:
@@ -255,6 +250,7 @@ class Simulation:
         return tuple(obj.position for obj in self.objects)
 
     def destroy(self):
+        """Perform any cleanup necessary to reset the simulator after a simulation."""
         pass
 
 class DummySimulator(Simulator):
