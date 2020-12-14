@@ -22,7 +22,7 @@ import scenic.simulators.carla.utils.visuals as visuals
 
 class CarlaSimulator(DrivingSimulator):
 	def __init__(self, carla_map, map_path, address='127.0.0.1', port=2000, timeout=10,
-		         render=True, record=False, timestep=0.1, weather=None):
+		         render=True, record='', timestep=0.1, weather=None):
 		super().__init__()
 		verbosePrint('Connecting to CARLA...')
 		self.client = carla.Client(address, port)
