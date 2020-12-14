@@ -168,6 +168,9 @@ try:
         print(f'Average iterations/scene: {sum(its)/count}')
         print(f'Average time/scene: {totalTime/count:.2f} seconds.')
 
+except KeyboardInterrupt:
+    pass
+
 finally:
     if args.simulate:
         simulator.destroy()

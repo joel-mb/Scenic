@@ -192,6 +192,8 @@ class CarlaSimulation(DrivingSimulation):
 	def destroy(self):
 		for obj in self.objects:
 			if obj.carlaActor is not None:
+				if isinstance(obj.carlaActor, carla.Vehicle):
+					obj.carlaActor.set_autopilot(False, self.tm.get_port())
 				obj.carlaActor.destroy()
 		if self.render and self.cameraManager:
 			self.cameraManager.destroy_sensor()
